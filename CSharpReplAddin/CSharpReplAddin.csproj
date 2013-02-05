@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.21022</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{E02E05EB-81FE-4753-9382-4A065706C93D}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>MonoDevelop.CSharpRepl</RootNamespace>
+    <AssemblyName>CSharpRepl</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>False</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>False</ConsolePause>
+    <CustomCommands>
+      <CustomCommands>
+        <Command type="Execute" command="MonoDevelop.exe --no-redirect" workingdir="../../monodevelop/main/build/bin" externalConsole="True">
+          <EnvironmentVariables>
+            <Variable name="PATH" value="/Library/Frameworks/Mono.framework/Versions/Current/bin:$(PATH)" />
+            <Variable name="DYLD_FALLBACK_LIBRARY_PATH" value="/Library/Frameworks/Mono.framework/Versions/Current/lib:/lib:/usr/lib" />
+            <Variable name="MONODEVELOP_DEV_ADDINS" value="$(TargetDir)" />
+            <Variable name="MONODEVELOP_CONSOLE_LOG_LEVEL" value="All" />
+            <Variable name="MONO_GAC_PREFIX" value="" />
+            <Variable name="MONODEVELOP_LOCALE_PATH" value="../locale" />
+            <Variable name="MONO_ADDINS_REGISTRY" value="." />
+          </EnvironmentVariables>
+        </Command>
+      </CustomCommands>
+    </CustomCommands>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>True</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>False</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="Mono.CSharp" />
+    <Reference Include="MonoDevelop.Core">
+      <HintPath>..\..\monodevelop\main\build\bin\MonoDevelop.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoDevelop.Ide">
+      <HintPath>..\..\monodevelop\main\build\bin\MonoDevelop.Ide.dll</HintPath>
+    </Reference>
+    <Reference Include="pango-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="atk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="ReplPad.cs" />
+    <Compile Include="StreamOutputter.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <None Include="CSharpRepl.addin.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CSharpReplLibrary\CSharpReplLibrary.csproj">
+      <Project>{192043DA-F32A-4DEA-A010-CD2C3971A34B}</Project>
+      <Name>CSharpReplLibrary</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CSharpReplServer\CSharpReplServer.csproj">
+      <Project>{DA44509C-FB53-45FA-8493-F7BCDBA19E45}</Project>
+      <Name>CSharpReplServer</Name>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

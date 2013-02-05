@@ -1,0 +1,18 @@
+<Command type="Execute" command="MonoDevelop.exe" workingdir="../../monodevelop/main/build/bin" pauseExternalConsole="True" >
+        	<EnvironmentVariables>
+        		<Variable name="MONODEVELOP_DEV_ADDINS" value="$(TargetDir)" />
+        		<Variable name="MONODEVELOP_CONSOLE_LOG_LEVEL" value="All" /> 
+        	</EnvironmentVariables>
+        </Command>
+        
+<Command type="Execute" command="mono MonoDevelop.exe --no-redirect" workingdir="../../monodevelop/main/build/bin" externalConsole="True" >
+      	  <EnvironmentVariables>
+            <Variable name="PATH" value="/Library/Frameworks/Mono.framework/Versions/Current/bin:$(PATH)" />
+            <Variable name="DYLD_FALLBACK_LIBRARY_PATH" value="/Library/Frameworks/Mono.framework/Versions/Current/lib:/lib:/usr/lib" />
+            <Variable name="MONODEVELOP_DEV_ADDINS" value="$(TargetDir)" />
+        	<Variable name="MONODEVELOP_CONSOLE_LOG_LEVEL" value="All" /> 
+        	<Variable name="MONO_GAC_PREFIX" value="" />
+        	<Variable name="MONODEVELOP_LOCALE_PATH" value="../locale" />
+        	<Variable name="MONO_ADDINS_REGISTRY" value="." />
+          </EnvironmentVariables>
+        </Command>
