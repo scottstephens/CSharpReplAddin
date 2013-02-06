@@ -67,6 +67,7 @@ namespace MonoDevelop.CSharpRepl
 					break;
 				}
 				Console.Out.Flush();
+				Console.Error.Flush();
 			}
 
 			tcpClient.Close();

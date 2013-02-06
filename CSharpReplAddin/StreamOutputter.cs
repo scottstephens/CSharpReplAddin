@@ -52,6 +52,7 @@ namespace MonoDevelop.CSharpRepl
 		public void Start()
 		{
 			_background_thread = new Thread(new ThreadStart(this.Run));
+			_background_thread.Start();
 		}
 
 		public void Stop()
@@ -68,7 +69,7 @@ namespace MonoDevelop.CSharpRepl
 				{
 					lock (Destination)
 					{
-						this.Destination.WriteOutput(tmp);
+						this.Destination.WriteOutput(tmp + Environment.NewLine);
 					}
 				}
 			}
