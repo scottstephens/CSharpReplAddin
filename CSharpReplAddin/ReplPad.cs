@@ -38,6 +38,8 @@ namespace MonoDevelop.CSharpRepl
 {
 	public class ReplPad: IPadContent
 	{
+		public static ReplPad Instance = null;
+
 		Pango.FontDescription customFont;
 		ReplView view;
 		bool disposed;
@@ -69,6 +71,7 @@ namespace MonoDevelop.CSharpRepl
 			// Start Repl process
 			this.StartInteractiveSession();
 			this.ConnectToInteractiveSession();
+			ReplPad.Instance = this;
 		}
 		void StartInteractiveSessionHandler(object sender, EventArgs e)
         {
@@ -117,7 +120,12 @@ namespace MonoDevelop.CSharpRepl
 			
 			view.SetFont (customFont);
 		}
-		
+
+		public void InputLine(string line)
+		{
+			this.view.WriteOutput(line+Environment.NewLine);
+		}
+
 		void OnViewConsoleInput (object sender, ConsoleInputEventArgs e)
 		{
 			if (this.shell == null)

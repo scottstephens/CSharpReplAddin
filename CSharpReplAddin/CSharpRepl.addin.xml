@@ -25,7 +25,32 @@
 			defaultLayout="*" 
 			defaultPlacement = "Bottom" 
 		/>
-			
 	</Extension>
-
+	
+	<Extension path = "/MonoDevelop/Ide/Commands">
+		<Command 
+			id = "MonoDevelop.CSharpRepl.Commands.ReplCommands.RunSelection"
+    		defaultHandler = "MonoDevelop.CSharpRepl.Commands.RunSelectionHandler"
+		    icon = "gtk-execute"
+		    shortcut = "Ctrl-R"
+		    macShortcut = "Meta|R"
+		    description = "Run in REPL"
+		    _label = "Run in REPL" 
+		/>
+		<Command 
+			id = "MonoDevelop.CSharpRepl.Commands.ReplCommands.RunLine"
+    		defaultHandler = "MonoDevelop.CSharpRepl.Commands.RunLineHandler"
+		    icon = "gtk-execute"
+		    shortcut = "Ctrl-E"
+		    macShortcut = "Meta|E"
+		    description = "Run Line in REPL"
+		    _label = "Run Line in REPL" 
+		/>
+	</Extension>
+	
+	<Extension path = "/MonoDevelop/Ide/MainMenu/Run">
+		<SeparatorItem id = "ReplSeparator" />
+		<CommandItem id = "MonoDevelop.CSharpRepl.Commands.ReplCommands.RunSelection" />
+		<CommandItem id = "MonoDevelop.CSharpRepl.Commands.ReplCommands.RunLine" />		
+	</Extension>
 </Addin>
