@@ -32,9 +32,9 @@ using System.Collections.Generic;
 using MonoDevelop.Core;
 using Gtk;
 
-namespace MonoDevelop.Components
+namespace MonoDevelop.CSharpRepl.Components
 {
-	public class ConsoleView: ScrolledWindow
+	public class ReplView : ScrolledWindow
 	{
 		string scriptLines = "";
 		
@@ -46,7 +46,7 @@ namespace MonoDevelop.Components
 		
 		TextView textView;
 	
-		public ConsoleView()
+		public ReplView()
 		{
 			PromptString = "> ";
 			PromptMultiLineString = ">> ";

@@ -32,7 +32,7 @@ using Assembly = System.Reflection.Assembly;
 
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Gui;
-using MonoDevelop.Components;
+using MonoDevelop.CSharpRepl.Components;
 
 namespace MonoDevelop.CSharpRepl
 {
@@ -40,10 +40,10 @@ namespace MonoDevelop.CSharpRepl
 	class StreamOutputter
 	{
 		StreamReader Source { get; set; }
-		ConsoleView Destination { get; set; }
+		ReplView Destination { get; set; }
 		Thread _background_thread;
 
-		public StreamOutputter(StreamReader source, ConsoleView destination)
+		public StreamOutputter(StreamReader source, ReplView destination)
 		{
 			this.Source = source;
 			this.Destination = destination;
@@ -62,11 +62,16 @@ namespace MonoDevelop.CSharpRepl
 
 		private void Run()
 		{
+			bool first = true;
 			while (true)
 			{
 				string tmp = this.Source.ReadLine();
 				if (tmp != "")
 				{
+					if (true) {
+						Thread.Sleep(1000);
+						first = false;
+					}
 					lock (Destination)
 					{
 						this.Destination.WriteOutput(tmp + Environment.NewLine);

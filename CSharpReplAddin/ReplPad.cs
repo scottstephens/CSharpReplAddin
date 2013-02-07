@@ -32,14 +32,14 @@ using Assembly = System.Reflection.Assembly;
 
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Gui;
-using MonoDevelop.Components;
+using MonoDevelop.CSharpRepl.Components;
 
 namespace MonoDevelop.CSharpRepl
 {
 	public class ReplPad: IPadContent
 	{
 		Pango.FontDescription customFont;
-		ConsoleView view;
+		ReplView view;
 		bool disposed;
 		ICSharpRepl shell;
 		string commandInProgress = null;
@@ -55,7 +55,7 @@ namespace MonoDevelop.CSharpRepl
 			else 
 				customFont = Pango.FontDescription.FromString("Courier New");
 			
-			view = new ConsoleView ();
+			view = new ReplView ();
 			view.PromptMultiLineString = "+ ";
 			view.ConsoleInput += OnViewConsoleInput;
 			view.SetFont (customFont);
@@ -114,14 +114,14 @@ namespace MonoDevelop.CSharpRepl
 					case CSharpReplEvaluationResultType.FAILED:
 						view.WriteOutput(result.Result);
 						this.commandInProgress = null;
-						view.Prompt(true);
+						view.Prompt(false);
 						break;
 					case CSharpReplEvaluationResultType.NEED_MORE_INPUT:
 						view.Prompt (false,true);
 						break;
 					case CSharpReplEvaluationResultType.SUCCESS_NO_OUTPUT:
 						this.commandInProgress = null;
-						view.Prompt(true);
+						view.Prompt(false);
 						break;
 					case CSharpReplEvaluationResultType.SUCCESS_WITH_OUTPUT:
 						view.WriteOutput(result.Result);
