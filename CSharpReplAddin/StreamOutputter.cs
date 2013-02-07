@@ -33,6 +33,7 @@ using Assembly = System.Reflection.Assembly;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Gui;
 using MonoDevelop.CSharpRepl.Components;
+using Gtk;
 
 namespace MonoDevelop.CSharpRepl
 {
@@ -74,7 +75,7 @@ namespace MonoDevelop.CSharpRepl
 					}
 					lock (Destination)
 					{
-						this.Destination.WriteOutput(tmp + Environment.NewLine);
+						Gtk.Application.Invoke((x,y) => this.Destination.WriteOutput(tmp + Environment.NewLine));
 					}
 				}
 			}

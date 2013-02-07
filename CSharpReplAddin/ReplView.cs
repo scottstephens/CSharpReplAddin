@@ -4,10 +4,12 @@
 // Author:
 //       Peter Johanson <latexer@gentoo.org>
 //       Lluis Sanchez Gual <lluis@novell.com>
-// 
+//       Scott Stephens <stephens.js@gmail.com>
+//
 // Copyright (c) 2005, Peter Johanson (latexer@gentoo.org)
 // Copyright (c) 2009 Novell, Inc (http://www.novell.com)
-// 
+// Copyright (c) 2013 Scott Stephens (stephens.js@gmail.com)
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -34,16 +36,17 @@ using Gtk;
 
 namespace MonoDevelop.CSharpRepl.Components
 {
-	public class ReplView : ScrolledWindow
+	public class ReplView: ScrolledWindow
 	{
 		string scriptLines = "";
 		
 		Stack<string> commandHistoryPast = new Stack<string> ();
 		Stack<string> commandHistoryFuture = new Stack<string> ();
-		
+		List<Tuple<string,EventHandler>> menuCommands = new List<Tuple<string,EventHandler>>();
+
 		bool inBlock = false;
 		string blockText = "";
-		
+
 		TextView textView;
 	
 		public ReplView()
@@ -66,6 +69,10 @@ namespace MonoDevelop.CSharpRepl.Components
 			Buffer.TagTable.Add (tag);
 			Prompt (false);
 		}
+		public void AddMenuCommand(string name, EventHandler handler)
+		{
+			this.menuCommands.Add(Tuple.Create(name,handler));
+		}
 
 		void TextViewPopulatePopup (object o, PopulatePopupArgs args)
 		{
@@ -78,6 +85,14 @@ namespace MonoDevelop.CSharpRepl.Components
 			
 			args.Menu.Add (sep);
 			args.Menu.Add (item);
+
+			foreach (var menu_command in menuCommands)
+			{
+				var tmp = new MenuItem(menu_command.Item1);
+				tmp.Activated += menu_command.Item2;
+				tmp.Show();
+				args.Menu.Add(tmp);
+			}
 		}
 
 		void ClearActivated (object sender, EventArgs e)
@@ -222,13 +237,21 @@ namespace MonoDevelop.CSharpRepl.Components
 		}
 		
 		TextMark endOfLastProcessing;
+		TextMark startOfPrompt;
+		PromptState promptState;
 
 		public TextIter InputLineBegin {
 			get {
 				return Buffer.GetIterAtMark (endOfLastProcessing);
 			}
 		}
-	
+
+		public TextIter InputPromptBegin {
+			get {
+				return Buffer.GetIterAtMark(startOfPrompt);
+			}
+		}
+
 		public TextIter InputLineEnd {
 			get { return Buffer.EndIter; }
 		}
@@ -254,22 +277,53 @@ namespace MonoDevelop.CSharpRepl.Components
 				Buffer.Insert (ref start, value);
 			}
 		}
-		
+
 		protected virtual void ProcessInput (string line)
 		{
-			WriteOutput ("\n");
+			WriteInput ("\n");
+			this.FinishInputLine();
 			if (ConsoleInput != null)
 				ConsoleInput (this, new ConsoleInputEventArgs (line));
 		}
-		
+
 		public void WriteOutput (string line)
+		{
+			string line_in_progress = this.InputLine;
+			TextIter start = this.InputPromptBegin;
+			TextIter end = this.InputLineEnd;
+			Buffer.Delete(ref start, ref end);
+			start = this.InputPromptBegin;
+			Buffer.Insert(ref start, line);
+
+			if (promptState != PromptState.None)
+				this.Prompt(!line.EndsWith(Environment.NewLine), promptState == PromptState.Multiline );
+			start = this.InputLineBegin;
+			Buffer.Insert(ref start, line_in_progress);
+			Buffer.PlaceCursor (Buffer.EndIter);
+			textView.ScrollMarkOnscreen (Buffer.InsertMark);
+			// Freeze all the text except our input line
+			Buffer.ApplyTag(Buffer.TagTable.Lookup("Freezer"), Buffer.StartIter, InputLineBegin);
+		}
+	
+		public void WriteInput(string line)
 		{
 			TextIter start = Buffer.EndIter;
 			Buffer.Insert (ref start , line);
 			Buffer.PlaceCursor (Buffer.EndIter);
 			textView.ScrollMarkOnscreen (Buffer.InsertMark);
 		}
-	
+
+		public void FinishInputLine()
+		{
+			startOfPrompt = Buffer.CreateMark(null, Buffer.EndIter, true);
+			endOfLastProcessing = Buffer.CreateMark (null, Buffer.EndIter, true);
+			Buffer.PlaceCursor (Buffer.EndIter);
+			textView.ScrollMarkOnscreen (Buffer.InsertMark);
+			// Freeze all the text except our input line
+			Buffer.ApplyTag(Buffer.TagTable.Lookup("Freezer"), Buffer.StartIter, InputLineBegin);
+			promptState = PromptState.None;
+		}
+
 		public void Prompt (bool newLine)
 		{
 			Prompt (newLine, false);
@@ -277,9 +331,14 @@ namespace MonoDevelop.CSharpRepl.Components
 	
 		public void Prompt (bool newLine, bool multiline)
 		{
+			promptState = multiline ? PromptState.Multiline : PromptState.Regular;
+
 			TextIter end = Buffer.EndIter;
 			if (newLine)
 				Buffer.Insert (ref end, "\n");
+
+			startOfPrompt = Buffer.CreateMark(null, Buffer.EndIter, true);
+
 			if (multiline)
 				Buffer.Insert (ref end, PromptMultiLineString);
 			else
@@ -315,7 +374,9 @@ namespace MonoDevelop.CSharpRepl.Components
 		
 		public event EventHandler<ConsoleInputEventArgs> ConsoleInput;
 	}
-	
+
+	public enum PromptState { None, Regular, Multiline }
+
 	public class ConsoleInputEventArgs: EventArgs
 	{
 		public ConsoleInputEventArgs (string text)

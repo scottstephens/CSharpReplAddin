@@ -23,7 +23,6 @@ namespace MonoDevelop.CSharpRepl
 
 		public void Start()
 		{
-
 			this.ListenThread.Start();
 		}
 
@@ -36,10 +35,8 @@ namespace MonoDevelop.CSharpRepl
 				//blocks until a client has connected to the server
 				TcpClient client = this.Listener.AcceptTcpClient();
 				
-				//create a thread to handle communication
-				//with connected client
-				Thread clientThread = new Thread(new ParameterizedThreadStart(handleClientComm));
-				clientThread.Start(client);
+				//handle communications with connected client
+				handleClientComm(client);
 			}
 		}
 

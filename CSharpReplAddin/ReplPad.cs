@@ -60,30 +60,50 @@ namespace MonoDevelop.CSharpRepl
 			view.ConsoleInput += OnViewConsoleInput;
 			view.SetFont (customFont);
 			view.ShadowType = Gtk.ShadowType.None;
+			view.AddMenuCommand("Start Interactive Session", StartInteractiveSessionHandler);
+			view.AddMenuCommand("Connect to Interactive Session", ConnectToInteractiveSessionHandler);
 			view.ShowAll ();
 			
 			IdeApp.Preferences.CustomOutputPadFontChanged += HandleCustomOutputPadFontChanged;
 
 			// Start Repl process
-
+			this.StartInteractiveSession();
+			this.ConnectToInteractiveSession();
+		}
+		void StartInteractiveSessionHandler(object sender, EventArgs e)
+        {
+			this.StartInteractiveSession();
+		}
+		void ConnectToInteractiveSessionHandler(object sender, EventArgs e)
+		{
+			ConnectToInteractiveSession();
+		}
+		void StartInteractiveSession()
+		{
 			string bin_dir = Path.GetDirectoryName(Assembly.GetAssembly(typeof(ReplPad)).Location);
 			string repl_exe = Path.Combine(bin_dir, "CSharpReplServer.exe");
 			var start_info = new ProcessStartInfo(repl_exe,"33333");
 			start_info.UseShellExecute = false;
 			start_info.RedirectStandardError = true;
 			start_info.RedirectStandardOutput = true;
-
+			
 			_repl_process = Process.Start(start_info);
 			_stdout = new StreamOutputter(_repl_process.StandardOutput, view);
 			_stderr = new StreamOutputter(_repl_process.StandardError, view);
 			_stdout.Start();
 			_stderr.Start();
-			Thread.Sleep(1000);
-
+			Thread.Sleep(1000); // Give _repl_process time to start up before we let anybody do anything with it
+		}
+		void ConnectToInteractiveSession()
+		{
 			var tmpshell = new CSharpReplServerProxy(33333);
-			tmpshell.Start();
-			this.shell = tmpshell;
-
+			try {
+				tmpshell.Start();
+				this.shell = tmpshell;
+			} catch (Exception e) {
+				this.shell = null;
+				view.WriteOutput("Failed connecting to interactive session: " + e.Message);
+			}
 		}
 		
 		void HandleCustomOutputPadFontChanged (object sender, EventArgs e)
@@ -100,12 +120,26 @@ namespace MonoDevelop.CSharpRepl
 		
 		void OnViewConsoleInput (object sender, ConsoleInputEventArgs e)
 		{
+			if (this.shell == null)
+			{
+				this.view.WriteOutput("Not connected.");
+				this.view.Prompt(true);
+				return;
+			}
+
 			if (this.commandInProgress != null)
 				this.commandInProgress += "\n" + e.Text;
 			else 
 				this.commandInProgress = e.Text;
 
-			var result = this.shell.evaluate(this.commandInProgress);
+			CSharpReplEvaluationResult result;
+			try {
+				result = this.shell.evaluate(this.commandInProgress);
+			} catch (Exception ex) {
+				view.WriteOutput("Evaluation failed: " + ex.Message);
+				view.Prompt(true);
+				return;
+			}
 
 			lock(view)
 			{
@@ -124,9 +158,9 @@ namespace MonoDevelop.CSharpRepl
 						view.Prompt(false);
 						break;
 					case CSharpReplEvaluationResultType.SUCCESS_WITH_OUTPUT:
-						view.WriteOutput(result.Result);
-						this.commandInProgress = null;
-						view.Prompt(true);
+						view.WriteOutput(result.Result);	
+						view.Prompt(true);						
+						this.commandInProgress = null;						
 						break;
 					default:
 						throw new Exception("Unexpected state! Contact developers.");
