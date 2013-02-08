@@ -33,6 +33,7 @@ using Assembly = System.Reflection.Assembly;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Gui;
 using MonoDevelop.CSharpRepl.Components;
+using MonoDevelop.Projects;
 
 namespace MonoDevelop.CSharpRepl
 {
@@ -46,7 +47,6 @@ namespace MonoDevelop.CSharpRepl
 		ReplView view;
 		bool disposed;
 		ICSharpRepl shell;
-		string commandInProgress = null;
 
 		Process _repl_process;
 		StreamOutputter _stdout;
@@ -76,9 +76,12 @@ namespace MonoDevelop.CSharpRepl
 		public void Start()
 		{
 			// Start Repl process
-			this.StartInteractiveSession();
-			this.ConnectToInteractiveSession();
-			this.Running = true;
+			if (!this.Running)
+			{
+				this.StartInteractiveSession();
+				this.ConnectToInteractiveSession();
+				this.Running = true;
+			}
 		}
 
 		public void Stop()
@@ -150,10 +153,31 @@ namespace MonoDevelop.CSharpRepl
 			view.SetFont (customFont);
 		}
 
-		public void InputLine(string line)
+		public void InputBlock(string block)
 		{
-			this.view.WriteOutput(line+Environment.NewLine);
+			this.view.WriteInput(block);
 		}
+
+		public void LoadReferences(DotNetProject project)
+		{
+			foreach ( var x in project.References)
+			{
+				if (x.ReferenceType == ReferenceType.Assembly) {
+					// Just a path to the reference, can be passed in no problem
+					this.shell.loadAssembly(x.Reference);
+				} else if (x.ReferenceType == ReferenceType.Gac || x.ReferenceType == ReferenceType.Package) {
+					// The fully-qualified name of the assembly, can be passed in no problem
+					this.shell.loadAssembly(x.Reference);
+				} else if (x.ReferenceType == ReferenceType.Project) {
+					DotNetProject inner_project = project.ParentSolution.FindProjectByName(x.Reference) as DotNetProject;
+					if (inner_project != null) {
+						this.view.WriteOutput(String.Format("Project reference not loaded because feature not yet supported: ", inner_project.Name));
+					} else 
+						this.view.WriteOutput(String.Format ("Cannot load non .NET project reference: {0}/{1}", project.Name, x.Reference));
+				}
+			}
+		}
+
 
 		void OnViewConsoleInput (object sender, ConsoleInputEventArgs e)
 		{
@@ -163,42 +187,34 @@ namespace MonoDevelop.CSharpRepl
 				this.view.Prompt(true);
 				return;
 			}
-
-			if (this.commandInProgress != null)
-				this.commandInProgress += "\n" + e.Text;
-			else 
-				this.commandInProgress = e.Text;
-
+			
 			Result result;
 			try {
-				result = this.shell.evaluate(this.commandInProgress);
+				result = this.shell.evaluate(e.Text);
 			} catch (Exception ex) {
 				view.WriteOutput("Evaluation failed: " + ex.Message);
 				view.Prompt(true);
 				return;
 			}
-
+			
 			switch (result.Type)
 			{
-				case ResultType.FAILED:
-					view.WriteOutput(result.ResultMessage);
-					this.commandInProgress = null;
-					view.Prompt(false);
-					break;
-				case ResultType.NEED_MORE_INPUT:
-					view.Prompt (false,true);
-					break;
-				case ResultType.SUCCESS_NO_OUTPUT:
-					this.commandInProgress = null;
-					view.Prompt(false);
-					break;
-				case ResultType.SUCCESS_WITH_OUTPUT:
-					view.WriteOutput(result.ResultMessage);	
-					view.Prompt(true);						
-					this.commandInProgress = null;						
-					break;
-				default:
-					throw new Exception("Unexpected state! Contact developers.");
+			case ResultType.FAILED:
+				view.WriteOutput(result.ResultMessage);
+				view.Prompt(false);
+				break;
+			case ResultType.NEED_MORE_INPUT:
+				view.Prompt (false,true);
+				break;
+			case ResultType.SUCCESS_NO_OUTPUT:
+				view.Prompt(false);
+				break;
+			case ResultType.SUCCESS_WITH_OUTPUT:
+				view.WriteOutput(result.ResultMessage);	
+				view.Prompt(true);
+				break;
+			default:
+				throw new Exception("Unexpected state! Contact developers.");
 			}
 		}
 		

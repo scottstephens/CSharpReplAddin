@@ -44,7 +44,6 @@ namespace MonoDevelop.CSharpRepl.Components
 		Stack<string> commandHistoryFuture = new Stack<string> ();
 		List<Tuple<string,EventHandler>> menuCommands = new List<Tuple<string,EventHandler>>();
 
-		bool inBlock = false;
 		string blockText = "";
 
 		TextView textView;
@@ -116,7 +115,103 @@ namespace MonoDevelop.CSharpRepl.Components
 		{
 			args.RetVal = ProcessKeyPressEvent (args.Event);
 		}
+
+		void InternalPrompt(bool multiline, bool move_cursor=true)
+		{
+			promptState = multiline ? PromptState.Multiline : PromptState.Regular;
+			if (!multiline)
+				blockText = "";
+
+			startOfPrompt = Buffer.CreateMark(null, Buffer.EndIter, true);
 		
+			TextIter end = Buffer.EndIter;
+			if (multiline)
+				Buffer.Insert (ref end, PromptMultiLineString);
+			else
+				Buffer.Insert (ref end, PromptString);
+
+
+			// Record the end of where we processed, used to calculate start
+			// of next input line
+			endOfLastProcessing = Buffer.CreateMark (null, Buffer.EndIter, true);
+			
+			// Freeze all the text except our input line
+			Buffer.ApplyTag(Buffer.TagTable.Lookup("Freezer"), Buffer.StartIter, InputLineBegin);
+
+			if (move_cursor)
+			{
+				Buffer.PlaceCursor (Buffer.EndIter);
+				textView.ScrollMarkOnscreen (Buffer.InsertMark);
+			}
+		}
+
+		void FinalizeLine(bool move_cursor=true)
+		{
+			if (this.blockText == "")
+				this.blockText += InputLine;
+			else 
+				this.blockText += Environment.NewLine + InputLine;
+
+			// Everything but the last item (which was input),
+			//in the future stack needs to get put back into the
+			// past stack
+			while (commandHistoryFuture.Count > 1)
+				commandHistoryPast.Push (commandHistoryFuture.Pop());
+			// Clear the pesky junk input line
+			commandHistoryFuture.Clear();
+			
+			// Record our input line
+			commandHistoryPast.Push(InputLine);
+			if (scriptLines == "")
+				scriptLines += InputLine;
+			else
+				scriptLines += Environment.NewLine + InputLine;
+
+			Buffer.Insert(Buffer.EndIter, Environment.NewLine);
+			startOfPrompt = Buffer.CreateMark(null, Buffer.EndIter, true);
+			endOfLastProcessing = Buffer.CreateMark (null, Buffer.EndIter, true);
+			promptState = PromptState.None;
+			Buffer.ApplyTag(Buffer.TagTable.Lookup("Freezer"), Buffer.StartIter, InputLineBegin);
+
+			if (move_cursor)
+			{
+				Buffer.PlaceCursor (Buffer.EndIter);
+				textView.ScrollMarkOnscreen (Buffer.InsertMark);
+				// Freeze all the text except our input line
+			}
+
+		}
+
+		void FinalizeBlock()
+		{
+			this.ProcessInput(blockText);
+		}
+
+		void HistoryUp()
+		{
+			if (commandHistoryPast.Count > 0) {
+				if (commandHistoryFuture.Count == 0)
+					commandHistoryFuture.Push (InputLine);
+				else if (commandHistoryPast.Count > 1 ) 
+					commandHistoryFuture.Push (commandHistoryPast.Pop());					
+				else 
+					return;
+				InputLine = commandHistoryPast.Peek();
+			}
+		}
+
+		void HistoryDown()
+		{
+			if (commandHistoryFuture.Count > 0) {
+				if (commandHistoryFuture.Count == 1)
+					InputLine = commandHistoryFuture.Pop();
+				else if (commandHistoryFuture.Count > 0) {
+					commandHistoryPast.Push (commandHistoryFuture.Pop ());
+					InputLine = commandHistoryPast.Peek ();
+				}
+			}
+		}
+
 		bool ProcessKeyPressEvent (Gdk.EventKey ev)
 		{
 			// Short circuit to avoid getting moved back to the input line
@@ -135,80 +230,18 @@ namespace MonoDevelop.CSharpRepl.Components
 //				TriggerCodeCompletion ();
 	
 			if (ev.Key == Gdk.Key.Return) {
-				if (inBlock) {
-					if (InputLine == "") {
-						ProcessInput (blockText);
-						blockText = "";
-						inBlock = false;
-					} else {
-						blockText += "\n" + InputLine;
-						string whiteSpace = null;
-						if (AutoIndent) {
-							System.Text.RegularExpressions.Regex r = new System.Text.RegularExpressions.Regex (@"^(\s+).*");
-							whiteSpace = r.Replace (InputLine, "$1");
-							if (InputLine.EndsWith (BlockStart))
-								whiteSpace += "\t";
-						}
-						Prompt (true, true);
-						if (AutoIndent)
-							InputLine += whiteSpace;
-					}
-				} else {
-					// Special case for start of new code block
-					if (!string.IsNullOrEmpty (BlockStart) && InputLine.Trim().EndsWith (BlockStart)) {
-						inBlock = true;
-						blockText = InputLine;
-						Prompt (true, true);
-						if (AutoIndent)
-							InputLine += "\t";
-						return true;
-					}
-					// Bookkeeping
-					if (InputLine != "") {
-						// Everything but the last item (which was input),
-						//in the future stack needs to get put back into the
-						// past stack
-						while (commandHistoryFuture.Count > 1)
-							commandHistoryPast.Push (commandHistoryFuture.Pop());
-						// Clear the pesky junk input line
-						commandHistoryFuture.Clear();
-	
-						// Record our input line
-						commandHistoryPast.Push(InputLine);
-						if (scriptLines == "")
-							scriptLines += InputLine;
-						else
-							scriptLines += "\n" + InputLine;
-					
-						ProcessInput (InputLine);
-					}
-				}
+				this.FinalizeLine();
+				this.FinalizeBlock();
 				return true;
 			}
 	
 			// The next two cases handle command history	
 			else if (ev.Key == Gdk.Key.Up) {
-				if (!inBlock && commandHistoryPast.Count > 0) {
-					if (commandHistoryFuture.Count == 0)
-						commandHistoryFuture.Push (InputLine);
-					else {
-						if (commandHistoryPast.Count == 1)
-							return true;
-						commandHistoryFuture.Push (commandHistoryPast.Pop());
-					}
-					InputLine = commandHistoryPast.Peek();
-				}
+				this.HistoryUp();
 				return true;
 			}
 			else if (ev.Key == Gdk.Key.Down) {
-				if (!inBlock && commandHistoryFuture.Count > 0) {
-					if (commandHistoryFuture.Count == 1)
-						InputLine = commandHistoryFuture.Pop();
-					else {
-						commandHistoryPast.Push (commandHistoryFuture.Pop ());
-						InputLine = commandHistoryPast.Peek ();
-					}
-				}
+				this.HistoryDown();
 				return true;
 			}	
 			else if (ev.Key == Gdk.Key.Left) {
@@ -280,8 +313,6 @@ namespace MonoDevelop.CSharpRepl.Components
 
 		protected virtual void ProcessInput (string line)
 		{
-			WriteInput ("\n");
-			this.FinishInputLine();
 			if (ConsoleInput != null)
 				ConsoleInput (this, new ConsoleInputEventArgs (line));
 		}
@@ -305,28 +336,24 @@ namespace MonoDevelop.CSharpRepl.Components
 			Buffer.ApplyTag(Buffer.TagTable.Lookup("Freezer"), Buffer.StartIter, InputLineBegin);
 		}
 	
-		public void WriteInput(string line)
+		protected void WriteNonTerminatedInput(string content)
 		{
-			line.Replace(Environment.NewLine,Environment.NewLine+this.PromptMultiLineString);
 			TextIter start = Buffer.EndIter;
-			Buffer.Insert (ref start , line);
-			Buffer.PlaceCursor (Buffer.EndIter);
-			textView.ScrollMarkOnscreen (Buffer.InsertMark);
+			Buffer.Insert (ref start , content);
 		}
-		public void ProcessInput()
+		public void WriteInput(string content)
 		{
+			string[] lines = content.Split(new string[]{Environment.NewLine},StringSplitOptions.RemoveEmptyEntries);
 
-		}
-
-		public void FinishInputLine()
-		{
-			startOfPrompt = Buffer.CreateMark(null, Buffer.EndIter, true);
-			endOfLastProcessing = Buffer.CreateMark (null, Buffer.EndIter, true);
-			Buffer.PlaceCursor (Buffer.EndIter);
-			textView.ScrollMarkOnscreen (Buffer.InsertMark);
-			// Freeze all the text except our input line
-			Buffer.ApplyTag(Buffer.TagTable.Lookup("Freezer"), Buffer.StartIter, InputLineBegin);
-			promptState = PromptState.None;
+			for (int ii = 0; ii < lines.Length; ++ii)
+			{
+				if (ii > 0) {
+					this.InternalPrompt(true, false);
+				}
+				this.WriteNonTerminatedInput(lines[ii]);
+				this.FinalizeLine(ii == lines.Length - 1);
+			}
+			this.FinalizeBlock();
 		}
 
 		public void Prompt (bool newLine)
@@ -336,28 +363,11 @@ namespace MonoDevelop.CSharpRepl.Components
 	
 		public void Prompt (bool newLine, bool multiline)
 		{
-			promptState = multiline ? PromptState.Multiline : PromptState.Regular;
-
 			TextIter end = Buffer.EndIter;
 			if (newLine)
 				Buffer.Insert (ref end, "\n");
 
-			startOfPrompt = Buffer.CreateMark(null, Buffer.EndIter, true);
-
-			if (multiline)
-				Buffer.Insert (ref end, PromptMultiLineString);
-			else
-				Buffer.Insert (ref end, PromptString);
-	
-			Buffer.PlaceCursor (Buffer.EndIter);
-			textView.ScrollMarkOnscreen (Buffer.InsertMark);
-	
-			// Record the end of where we processed, used to calculate start
-			// of next input line
-			endOfLastProcessing = Buffer.CreateMark (null, Buffer.EndIter, true);
-	
-			// Freeze all the text except our input line
-			Buffer.ApplyTag(Buffer.TagTable.Lookup("Freezer"), Buffer.StartIter, InputLineBegin);
+			this.InternalPrompt(multiline);
 		}
 		
 		public void Clear ()

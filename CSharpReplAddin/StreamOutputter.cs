@@ -77,7 +77,6 @@ namespace MonoDevelop.CSharpRepl
 					break;
 				}
 
-
 				if (tmp == null)
 					break;
 

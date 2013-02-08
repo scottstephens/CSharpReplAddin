@@ -5,6 +5,7 @@ using ExtensibleTextEditor = MonoDevelop.SourceEditor.ExtensibleTextEditor;
 using DocumentLine = Mono.TextEditor.DocumentLine;
 using MonoDevelop.Ide;
 using MonoDevelop.Projects;
+using System.Text;
 
 namespace MonoDevelop.CSharpRepl.Commands
 {
@@ -27,10 +28,17 @@ namespace MonoDevelop.CSharpRepl.Commands
 			if (IdeApp.Workbench.RootWindow.HasToplevelFocus) {
 				ExtensibleTextEditor editor = IdeApp.Workbench.RootWindow.Focus as ExtensibleTextEditor;
 				if (editor != null) {
-					foreach (var line in editor.SelectedLines)
+					StringBuilder block_builder = new StringBuilder();
+					if (editor.SelectedText == null)
 					{
-						string x = editor.GetTextAt(line.Segment);
-						ReplPad.Instance.InputLine(x);
+						foreach (var line in editor.SelectedLines)
+						{
+							string x = editor.GetTextAt(line.Segment);
+							block_builder.AppendLine(x);
+						}
+						ReplPad.Instance.InputBlock(block_builder.ToString());
+					} else {
+						ReplPad.Instance.InputBlock(editor.SelectedText);
 					}
 				}
 			}
@@ -51,12 +59,14 @@ namespace MonoDevelop.CSharpRepl.Commands
 
 				DocumentLine last_line = null;
 				if (editor != null) {
+					StringBuilder block_builder = new StringBuilder();
 					foreach (var line in editor.SelectedLines)
 					{
 						string x = editor.GetTextAt(line.Segment);
-						ReplPad.Instance.InputLine(x);
+						block_builder.AppendLine(x);
 						last_line = line;
 					}
+					ReplPad.Instance.InputBlock(block_builder.ToString());
 					editor.ClearSelection();
 					editor.Caret.Line = last_line.LineNumber + 1;
 				}
@@ -77,12 +87,8 @@ namespace MonoDevelop.CSharpRepl.Commands
 
 			if (project != null)
 			{
-				foreach ( var x in project.References)
-				{
-					string y = x.Reference;
-					string z = x.ReferenceType.ToString();
-				}
 				ReplPad.Instance.Start();
+				ReplPad.Instance.LoadReferences(project);
 			}
 		}
 
