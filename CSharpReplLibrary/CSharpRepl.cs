@@ -8,7 +8,8 @@ namespace MonoDevelop.CSharpRepl
 
 	public interface ICSharpRepl 
 	{
-		CSharpReplEvaluationResult evaluate(string input);
+		Result evaluate(string input);
+		Result loadAssembly(string file);
 	}
 
 	public class CSharpRepl : ICSharpRepl
@@ -34,9 +35,9 @@ namespace MonoDevelop.CSharpRepl
 			this.evaluate("using System; using System.Linq; using System.Collections.Generic; using System.Collections;");
 		}
 
-		public CSharpReplEvaluationResult evaluate(string input)
+		public Result evaluate(string input)
 		{
-			CSharpReplEvaluationResult output;
+			Result output;
 			try 
 			{
 				object result;
@@ -45,7 +46,7 @@ namespace MonoDevelop.CSharpRepl
 
 				if (this.Printer.ErrorsCount > 0)
 				{
-					output = new CSharpReplEvaluationResult(CSharpReplEvaluationResultType.FAILED, this.CompilerErrorWriter.GetStringBuilder().ToString());
+					output = new Result(ResultType.FAILED, this.CompilerErrorWriter.GetStringBuilder().ToString());
 					this.CompilerErrorWriter.GetStringBuilder().Clear();
 				}
 				else if (result_set)
@@ -53,24 +54,34 @@ namespace MonoDevelop.CSharpRepl
 					StringWriter output_writer = new StringWriter();
 					PrettyPrint (output_writer, result);
 					output_writer.Close();
-					output = new CSharpReplEvaluationResult(CSharpReplEvaluationResultType.SUCCESS_WITH_OUTPUT, output_writer.GetStringBuilder().ToString());
+					output = new Result(ResultType.SUCCESS_WITH_OUTPUT, output_writer.GetStringBuilder().ToString());
 				} 
 				else if (input == null)
 				{
-					output = new CSharpReplEvaluationResult(CSharpReplEvaluationResultType.SUCCESS_NO_OUTPUT, null);
+					output = new Result(ResultType.SUCCESS_NO_OUTPUT, null);
 				}
 				else 
 				{
-					output = new CSharpReplEvaluationResult(CSharpReplEvaluationResultType.NEED_MORE_INPUT, null);
+					output = new Result(ResultType.NEED_MORE_INPUT, null);
 				}
 
 			} 
 			catch (Exception e)
 			{
-				output = new CSharpReplEvaluationResult(CSharpReplEvaluationResultType.FAILED, e.ToString());
+				output = new Result(ResultType.FAILED, e.ToString());
 			}
 			this.Printer.Reset();
 			return output;
+		}
+
+		public Result loadAssembly(string file)
+		{
+			try {
+				this.InnerEvaluator.LoadAssembly(file);
+				return new Result(ResultType.SUCCESS_NO_OUTPUT, null);
+			} catch(Exception e) {
+				return new Result(ResultType.FAILED,e.Message);
+			}
 		}
 
 		#region pretty printing

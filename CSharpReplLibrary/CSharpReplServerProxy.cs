@@ -20,17 +20,31 @@ namespace MonoDevelop.CSharpRepl
 		}
 		#region ICSharpShell implementation
 
-		public CSharpReplEvaluationResult evaluate (string input)
+		public Result evaluate (string input)
 		{
 			StreamedMessageUtils<NetworkStream> messenger = new StreamedMessageUtils<NetworkStream>(this.Client.GetStream());
 
-			var request = new CSharpReplEvaluationRequest(input);
+			var request = new Request(input);
 			byte[] outgoing_buffer = request.Serialize();
 			messenger.writeMessage(outgoing_buffer);
 
 			byte[] incoming_buffer = messenger.readMessage();
-			var result = CSharpReplEvaluationResult.Deserialize(incoming_buffer);
+			var result = Result.Deserialize(incoming_buffer);
 
+			return result;
+		}
+
+		public Result loadAssembly(string file)
+		{
+			StreamedMessageUtils<NetworkStream> messenger = new StreamedMessageUtils<NetworkStream>(this.Client.GetStream());
+			
+			var request = Request.CreateAssemblyLoadRequest(file);
+			byte[] outgoing_buffer = request.Serialize();
+			messenger.writeMessage(outgoing_buffer);
+			
+			byte[] incoming_buffer = messenger.readMessage();
+			var result = Result.Deserialize(incoming_buffer);
+			
 			return result;
 		}
 

@@ -140,7 +140,7 @@ namespace MonoDevelop.CSharpRepl
 			else 
 				this.commandInProgress = e.Text;
 
-			CSharpReplEvaluationResult result;
+			Result result;
 			try {
 				result = this.shell.evaluate(this.commandInProgress);
 			} catch (Exception ex) {
@@ -149,30 +149,27 @@ namespace MonoDevelop.CSharpRepl
 				return;
 			}
 
-			lock(view)
+			switch (result.Type)
 			{
-				switch (result.ResultType)
-				{
-					case CSharpReplEvaluationResultType.FAILED:
-						view.WriteOutput(result.Result);
-						this.commandInProgress = null;
-						view.Prompt(false);
-						break;
-					case CSharpReplEvaluationResultType.NEED_MORE_INPUT:
-						view.Prompt (false,true);
-						break;
-					case CSharpReplEvaluationResultType.SUCCESS_NO_OUTPUT:
-						this.commandInProgress = null;
-						view.Prompt(false);
-						break;
-					case CSharpReplEvaluationResultType.SUCCESS_WITH_OUTPUT:
-						view.WriteOutput(result.Result);	
-						view.Prompt(true);						
-						this.commandInProgress = null;						
-						break;
-					default:
-						throw new Exception("Unexpected state! Contact developers.");
-				}
+				case ResultType.FAILED:
+					view.WriteOutput(result.ResultMessage);
+					this.commandInProgress = null;
+					view.Prompt(false);
+					break;
+				case ResultType.NEED_MORE_INPUT:
+					view.Prompt (false,true);
+					break;
+				case ResultType.SUCCESS_NO_OUTPUT:
+					this.commandInProgress = null;
+					view.Prompt(false);
+					break;
+				case ResultType.SUCCESS_WITH_OUTPUT:
+					view.WriteOutput(result.ResultMessage);	
+					view.Prompt(true);						
+					this.commandInProgress = null;						
+					break;
+				default:
+					throw new Exception("Unexpected state! Contact developers.");
 			}
 		}
 		

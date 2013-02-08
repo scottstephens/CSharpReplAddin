@@ -10,33 +10,51 @@ namespace MonoDevelop.CSharpRepl
 {
 	public class CSharpReplServer
 	{
+		private int Port { get; set; }
 		private TcpListener Listener { get; set; }
 		private Thread ListenThread { get; set; }
 		private CSharpRepl Repl { get; set; }
 
 		public CSharpReplServer (int port)
 		{
-			this.Listener = new TcpListener(IPAddress.Loopback, port);
-			this.ListenThread = new Thread(new ThreadStart(listenForClients));
-			this.Repl = new CSharpRepl();
+			this.Port = port;
 		}
 
 		public void Start()
 		{
+			this.Listener = new TcpListener(IPAddress.Loopback, this.Port);
+			this.ListenThread = new Thread(new ThreadStart(listenForClients));
+			this.Repl = new CSharpRepl();
 			this.ListenThread.Start();
 		}
 
 		private void listenForClients()
 		{
-			this.Listener.Start();
+			try {
+				this.Listener.Start();
+			} catch (Exception e) {
+				Console.WriteLine("Error starting TCP listener: " + e.Message);
+				return;
+			}
 			
 			while (true)
 			{
 				//blocks until a client has connected to the server
-				TcpClient client = this.Listener.AcceptTcpClient();
+				TcpClient client;
+				try {
+					client = this.Listener.AcceptTcpClient();
+				} catch (Exception e) {
+					Console.WriteLine("Error accepting client connection: " + e.Message);
+					break;
+				}
 				
 				//handle communications with connected client
-				handleClientComm(client);
+				try {
+					handleClientComm(client);
+				} catch (Exception e) {
+					Console.WriteLine("Error in handling client communications: " + e.Message);
+					break;
+				}
 			}
 		}
 
@@ -53,14 +71,19 @@ namespace MonoDevelop.CSharpRepl
 				{
 					//blocks until a client sends a message
 					byte[] buffer = messenger.readMessage();
-					var request = CSharpReplEvaluationRequest.Deserialize(buffer);
-					CSharpReplEvaluationResult result = this.Repl.evaluate(request.Code);
+					var request = Request.Deserialize(buffer);
+					Result result;
+					if (request.Type == RequestType.Evaluate) {
+						result = this.Repl.evaluate(request.Code);
+					} else {
+						result = this.Repl.loadAssembly(request.AssemblyToLoad);
+					}
 					byte[] output_buffer = result.Serialize();
 					messenger.writeMessage(output_buffer);
 				}
 				catch (Exception e)
 				{
-					//an error has occured
+					Console.WriteLine("Unexpected error occurred: " + e.Message);
 					break;
 				}
 				Console.Out.Flush();

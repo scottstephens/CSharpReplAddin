@@ -40,14 +40,16 @@ namespace MonoDevelop.CSharpRepl
 
 	class StreamOutputter
 	{
+		string Name { get; set; }
 		StreamReader Source { get; set; }
 		ReplView Destination { get; set; }
 		Thread _background_thread;
 
-		public StreamOutputter(StreamReader source, ReplView destination)
+		public StreamOutputter(StreamReader source, ReplView destination, string name="")
 		{
 			this.Source = source;
 			this.Destination = destination;
+			this.Name = name;
 		}
 
 		public void Start()
@@ -63,22 +65,29 @@ namespace MonoDevelop.CSharpRepl
 
 		private void Run()
 		{
-			bool first = true;
 			while (true)
 			{
-				string tmp = this.Source.ReadLine();
+				string tmp;
+				try {
+					tmp = this.Source.ReadLine();
+				} catch (Exception e) {
+					this.WriteOutput("Error reading " + this.Name + ", shutting down: " + e.Message);
+					break;
+				}
+
+				if (tmp == null)
+					break;
+
 				if (tmp != "")
 				{
-					if (true) {
-						Thread.Sleep(1000);
-						first = false;
-					}
-					lock (Destination)
-					{
-						Gtk.Application.Invoke((x,y) => this.Destination.WriteOutput(tmp + Environment.NewLine));
-					}
+					this.WriteOutput(tmp + Environment.NewLine);
 				}
 			}
+		}
+
+		private void WriteOutput(string content)
+		{
+			Gtk.Application.Invoke((x,y) => this.Destination.WriteOutput(content));
 		}
 	}
 

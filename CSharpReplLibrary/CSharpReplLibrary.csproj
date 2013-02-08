@@ -44,9 +44,9 @@
     <Compile Include="CSharpRepl.cs" />
     <Compile Include="CSharpReplServer.cs" />
     <Compile Include="CSharpReplServerProxy.cs" />
-    <Compile Include="CSharpReplEvaluationResult.cs" />
-    <Compile Include="CSharpReplEvaluationRequest.cs" />
     <Compile Include="StreamWrapper.cs" />
+    <Compile Include="Request.cs" />
+    <Compile Include="Result.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
