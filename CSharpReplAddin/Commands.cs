@@ -8,7 +8,7 @@ using MonoDevelop.Projects;
 
 namespace MonoDevelop.CSharpRepl.Commands
 {
-	public enum ReplCommands { RunSelection, RunLine, LaunchReplForActiveDocument, StopRepl }
+	public enum ReplCommands { RunSelection, RunLine, LaunchReplForActiveDocument, LaunchGenericRepl, StopRepl }
 
 	internal static class CommandHelper 
 	{
@@ -88,9 +88,21 @@ namespace MonoDevelop.CSharpRepl.Commands
 
 		protected override void Update (CommandInfo info)
 		{
-			bool no_nulls = IdeApp.Workbench != null && IdeApp.Workbench.ActiveDocument != null;
-			DotNetProject project = no_nulls ? IdeApp.Workbench.ActiveDocument.Project as DotNetProject : null;
-			info.Enabled = project != null && project.LanguageName == "C#";
+			info.Enabled = !ReplPad.Instance.Running;
+			info.Visible = CommandHelper.ActiveDocumentIsCSharp;
+		}
+	}
+
+	public class LaunchGenericReplHandler : CommandHandler 
+	{
+		protected override void Run()
+		{
+			ReplPad.Instance.Start();
+		}
+		protected override void Update (CommandInfo info)
+		{
+			info.Enabled = !ReplPad.Instance.Running;
+			info.Visible = true;
 		}
 	}
 
@@ -103,18 +115,8 @@ namespace MonoDevelop.CSharpRepl.Commands
 
 		protected override void Update(CommandInfo info)
 		{
-			if (ReplPad.Instance != null && ReplPad.Instance.Running)
-			{
-				info.Visible = true;
-				info.Enabled = true;
-				return;
-			} else if (CommandHelper.ActiveDocumentIsCSharp) {
-				info.Visible = true;
-				info.Enabled = false;
-			} else {
-				info.Visible = false;
-				info.Enabled = false;
-			}
+			info.Visible = true;
+			info.Enabled = ReplPad.Instance != null && ReplPad.Instance.Running;
 		}
 
 	}

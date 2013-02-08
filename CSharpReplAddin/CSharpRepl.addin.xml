@@ -60,10 +60,18 @@
 			description = "Stop REPL"
 			_label = "Stop REPL"
 		/>
+		<Command
+			id = "MonoDevelop.CSharpRepl.Commands.ReplCommands.LaunchGenericRepl"
+			defaultHandler = "MonoDevelop.CSharpRepl.Commands.LaunchGenericReplHandler"
+			icon = "gtk-execute"
+			description = "Launch Generic C# REPL"
+			_label = "Launch Generic C# REPL"
+		/>
 	</Extension>
 	
 	<Extension path = "/MonoDevelop/Ide/MainMenu/Run">
 		<SeparatorItem id = "ReplSeparator" />
+		<CommandItem id = "MonoDevelop.CSharpRepl.Commands.ReplCommands.LaunchGenericRepl" />
 		<CommandItem id = "MonoDevelop.CSharpRepl.Commands.ReplCommands.LaunchReplForActiveDocument" />
 		<CommandItem id = "MonoDevelop.CSharpRepl.Commands.ReplCommands.StopRepl" />
 		<CommandItem id = "MonoDevelop.CSharpRepl.Commands.ReplCommands.RunSelection" />
