@@ -307,10 +307,15 @@ namespace MonoDevelop.CSharpRepl.Components
 	
 		public void WriteInput(string line)
 		{
+			line.Replace(Environment.NewLine,Environment.NewLine+this.PromptMultiLineString);
 			TextIter start = Buffer.EndIter;
 			Buffer.Insert (ref start , line);
 			Buffer.PlaceCursor (Buffer.EndIter);
 			textView.ScrollMarkOnscreen (Buffer.InsertMark);
+		}
+		public void ProcessInput()
+		{
+
 		}
 
 		public void FinishInputLine()

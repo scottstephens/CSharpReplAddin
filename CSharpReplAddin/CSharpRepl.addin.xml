@@ -33,7 +33,7 @@
     		defaultHandler = "MonoDevelop.CSharpRepl.Commands.RunSelectionHandler"
 		    icon = "gtk-execute"
 		    shortcut = "Ctrl-R"
-		    macShortcut = "Meta|R"
+		    macShortcut = "Ctrl|R"
 		    description = "Run in REPL"
 		    _label = "Run in REPL" 
 		/>
@@ -42,14 +42,30 @@
     		defaultHandler = "MonoDevelop.CSharpRepl.Commands.RunLineHandler"
 		    icon = "gtk-execute"
 		    shortcut = "Ctrl-E"
-		    macShortcut = "Meta|E"
+		    macShortcut = "Ctrl|E"
 		    description = "Run Line in REPL"
 		    _label = "Run Line in REPL" 
+		/>
+		<Command
+			id = "MonoDevelop.CSharpRepl.Commands.ReplCommands.LaunchReplForActiveDocument"
+			defaultHandler = "MonoDevelop.CSharpRepl.Commands.LaunchReplForActiveDocumentHandler"
+			icon = "gtk-execute"
+			description = "Launch REPL for Active Document"
+			_label = "Launch REPL for Active Document"
+		/>
+		<Command
+			id = "MonoDevelop.CSharpRepl.Commands.ReplCommands.StopRepl"
+			defaultHandler = "MonoDevelop.CSharpRepl.Commands.StopReplHandler"
+			icon = "gtk-execute"
+			description = "Stop REPL"
+			_label = "Stop REPL"
 		/>
 	</Extension>
 	
 	<Extension path = "/MonoDevelop/Ide/MainMenu/Run">
 		<SeparatorItem id = "ReplSeparator" />
+		<CommandItem id = "MonoDevelop.CSharpRepl.Commands.ReplCommands.LaunchReplForActiveDocument" />
+		<CommandItem id = "MonoDevelop.CSharpRepl.Commands.ReplCommands.StopRepl" />
 		<CommandItem id = "MonoDevelop.CSharpRepl.Commands.ReplCommands.RunSelection" />
 		<CommandItem id = "MonoDevelop.CSharpRepl.Commands.ReplCommands.RunLine" />		
 	</Extension>

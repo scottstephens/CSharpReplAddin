@@ -40,6 +40,8 @@ namespace MonoDevelop.CSharpRepl
 	{
 		public static ReplPad Instance = null;
 
+		public bool Running { get; private set; }
+
 		Pango.FontDescription customFont;
 		ReplView view;
 		bool disposed;
@@ -62,17 +64,44 @@ namespace MonoDevelop.CSharpRepl
 			view.ConsoleInput += OnViewConsoleInput;
 			view.SetFont (customFont);
 			view.ShadowType = Gtk.ShadowType.None;
-			view.AddMenuCommand("Start Interactive Session", StartInteractiveSessionHandler);
-			view.AddMenuCommand("Connect to Interactive Session", ConnectToInteractiveSessionHandler);
+			//view.AddMenuCommand("Start Interactive Session", StartInteractiveSessionHandler);
+			//view.AddMenuCommand("Connect to Interactive Session", ConnectToInteractiveSessionHandler);
 			view.ShowAll ();
 			
 			IdeApp.Preferences.CustomOutputPadFontChanged += HandleCustomOutputPadFontChanged;
 
+			ReplPad.Instance = this;
+		}
+
+		public void Start()
+		{
 			// Start Repl process
 			this.StartInteractiveSession();
 			this.ConnectToInteractiveSession();
-			ReplPad.Instance = this;
+			this.Running = true;
 		}
+
+		public void Stop()
+		{
+			if (_stderr != null) {
+				_stderr.Stop(); 
+				_stderr = null;
+			}
+			if (_stdout != null) {
+				_stdout.Stop();
+				_stdout = null;
+			}
+			if (_repl_process != null)
+			{
+				_repl_process.Kill();
+				_repl_process.Close();
+				_repl_process.Dispose();
+				_repl_process = null;
+			}
+			this.Running = false;
+			view.WriteOutput("Disconnected.");
+		}
+
 		void StartInteractiveSessionHandler(object sender, EventArgs e)
         {
 			this.StartInteractiveSession();
@@ -225,19 +254,12 @@ namespace MonoDevelop.CSharpRepl
 		public void Dispose ()
 		{
 			if (!disposed) {
+				this.Stop();
+
 				IdeApp.Preferences.CustomOutputPadFontChanged -= HandleCustomOutputPadFontChanged;
 				if (customFont != null)
 					customFont.Dispose ();
-				if (_stderr != null)
-					_stderr.Stop(); 
-				if (_stdout != null)
-					_stdout.Stop();
-				if (_repl_process != null)
-				{
-					_repl_process.Kill();
-					_repl_process.Close();
-					_repl_process.Dispose();
-				}
+
 				disposed = true;
 			}
 		}

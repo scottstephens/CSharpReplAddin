@@ -10,12 +10,15 @@ namespace MonoDevelop.CSharpRepl
 	{
 		Result evaluate(string input);
 		Result loadAssembly(string file);
+		Result getVariables();
+		Result getUsings();
 	}
 
 	public class CSharpRepl : ICSharpRepl
 	{
 		private Evaluator InnerEvaluator { get; set; }
 		private CompilerSettings Settings { get; set; }
+		private CompilerContext Context { get; set; }
 		private StreamReportPrinter Printer { get; set; }
 		private StringWriter CompilerErrorWriter { get; set; }
 
@@ -24,7 +27,8 @@ namespace MonoDevelop.CSharpRepl
 			this.Settings = new CompilerSettings();
 			this.CompilerErrorWriter = new StringWriter();
 			this.Printer = new StreamReportPrinter(this.CompilerErrorWriter);
-			this.InnerEvaluator = new Evaluator(new CompilerContext (this.Settings, this.Printer));
+			this.Context = new CompilerContext (this.Settings, this.Printer);
+			this.InnerEvaluator = new Evaluator(this.Context);
 			this.InnerEvaluator.InteractiveBaseClass = typeof(InteractiveBase);
 			this.InnerEvaluator.DescribeTypeExpressions = true;
 			this.InitializeUsings();
@@ -74,13 +78,42 @@ namespace MonoDevelop.CSharpRepl
 			return output;
 		}
 
-		public Result loadAssembly(string file)
+		public Result loadAssembly(string name_or_path)
 		{
 			try {
-				this.InnerEvaluator.LoadAssembly(file);
+				this.InnerEvaluator.LoadAssembly(name_or_path);
 				return new Result(ResultType.SUCCESS_NO_OUTPUT, null);
 			} catch(Exception e) {
 				return new Result(ResultType.FAILED,e.Message);
+			}
+		}
+		public Result loadPackage(string package)
+		{
+			try {
+				InteractiveBase.LoadPackage(package);
+				return new Result(ResultType.SUCCESS_NO_OUTPUT, null);
+			} catch (Exception e) {
+				return new Result(ResultType.FAILED, e.Message);
+			}
+		}
+
+		public Result getVariables()
+		{
+			try {
+				string vars = this.InnerEvaluator.GetVars();
+				return new Result(ResultType.SUCCESS_WITH_OUTPUT, vars);
+			} catch (Exception e) {
+				return new Result(ResultType.FAILED, e.Message);
+			}
+		}
+
+		public Result getUsings()
+		{
+			try {
+				string usings = this.InnerEvaluator.GetUsing();
+				return new Result(ResultType.SUCCESS_WITH_OUTPUT, usings);
+			} catch (Exception e) {
+				return new Result(ResultType.FAILED, e.Message);
 			}
 		}
 

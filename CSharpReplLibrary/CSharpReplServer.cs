@@ -75,9 +75,17 @@ namespace MonoDevelop.CSharpRepl
 					Result result;
 					if (request.Type == RequestType.Evaluate) {
 						result = this.Repl.evaluate(request.Code);
-					} else {
+					} else if (request.Type == RequestType.LoadAssembly) {
 						result = this.Repl.loadAssembly(request.AssemblyToLoad);
+					} else if (request.Type == RequestType.Variables) {
+						result = this.Repl.getVariables();
+					} else if (request.Type == RequestType.Usings) {
+						result = this.Repl.getUsings();
+					} else {
+						Console.WriteLine("Received unexpected request type {0}",request.Type);
+						break;
 					}
+
 					byte[] output_buffer = result.Serialize();
 					messenger.writeMessage(output_buffer);
 				}

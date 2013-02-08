@@ -70,10 +70,13 @@ namespace MonoDevelop.CSharpRepl
 				string tmp;
 				try {
 					tmp = this.Source.ReadLine();
+				} catch (ThreadAbortException) {
+					break;
 				} catch (Exception e) {
 					this.WriteOutput("Error reading " + this.Name + ", shutting down: " + e.Message);
 					break;
 				}
+
 
 				if (tmp == null)
 					break;

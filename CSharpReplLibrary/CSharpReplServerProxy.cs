@@ -24,7 +24,7 @@ namespace MonoDevelop.CSharpRepl
 		{
 			StreamedMessageUtils<NetworkStream> messenger = new StreamedMessageUtils<NetworkStream>(this.Client.GetStream());
 
-			var request = new Request(input);
+			var request = Request.CreateEvaluationRequest(input);
 			byte[] outgoing_buffer = request.Serialize();
 			messenger.writeMessage(outgoing_buffer);
 
@@ -39,6 +39,34 @@ namespace MonoDevelop.CSharpRepl
 			StreamedMessageUtils<NetworkStream> messenger = new StreamedMessageUtils<NetworkStream>(this.Client.GetStream());
 			
 			var request = Request.CreateAssemblyLoadRequest(file);
+			byte[] outgoing_buffer = request.Serialize();
+			messenger.writeMessage(outgoing_buffer);
+			
+			byte[] incoming_buffer = messenger.readMessage();
+			var result = Result.Deserialize(incoming_buffer);
+			
+			return result;
+		}
+
+		public Result getVariables()
+		{
+			StreamedMessageUtils<NetworkStream> messenger = new StreamedMessageUtils<NetworkStream>(this.Client.GetStream());
+			
+			var request = Request.CreateGetVariablesRequest();
+			byte[] outgoing_buffer = request.Serialize();
+			messenger.writeMessage(outgoing_buffer);
+			
+			byte[] incoming_buffer = messenger.readMessage();
+			var result = Result.Deserialize(incoming_buffer);
+			
+			return result;
+		}
+
+		public Result getUsings()
+		{
+			StreamedMessageUtils<NetworkStream> messenger = new StreamedMessageUtils<NetworkStream>(this.Client.GetStream());
+			
+			var request = Request.CreateGetUsingsRequest();
 			byte[] outgoing_buffer = request.Serialize();
 			messenger.writeMessage(outgoing_buffer);
 			
