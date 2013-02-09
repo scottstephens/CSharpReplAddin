@@ -167,7 +167,8 @@ namespace MonoDevelop.CSharpRepl.Components
 			else
 				scriptLines += Environment.NewLine + InputLine;
 
-			Buffer.Insert(Buffer.EndIter, Environment.NewLine);
+			var end = Buffer.EndIter;
+			Buffer.Insert(ref end, Environment.NewLine);
 			startOfPrompt = Buffer.CreateMark(null, Buffer.EndIter, true);
 			endOfLastProcessing = Buffer.CreateMark (null, Buffer.EndIter, true);
 			promptState = PromptState.None;
