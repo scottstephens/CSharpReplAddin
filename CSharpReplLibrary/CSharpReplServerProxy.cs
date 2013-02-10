@@ -38,7 +38,7 @@ namespace MonoDevelop.CSharpRepl
 		{
 			StreamedMessageUtils<NetworkStream> messenger = new StreamedMessageUtils<NetworkStream>(this.Client.GetStream());
 			
-			var request = Request.CreateAssemblyLoadRequest(file);
+			var request = Request.CreateLoadAssemblyRequest(file);
 			byte[] outgoing_buffer = request.Serialize();
 			messenger.writeMessage(outgoing_buffer);
 			

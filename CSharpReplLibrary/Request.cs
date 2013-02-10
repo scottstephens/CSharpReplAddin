@@ -23,9 +23,9 @@ namespace MonoDevelop.CSharpRepl
 		{
 			return new Request(RequestType.Evaluate, code, null);
 		}
-		public static Request CreateAssemblyLoadRequest(string assembly)
+		public static Request CreateLoadAssemblyRequest(string assembly)
 		{
-			return new Request(RequestType.Evaluate, null, assembly);
+			return new Request(RequestType.LoadAssembly, null, assembly);
 		}
 
 		public static Request CreateGetVariablesRequest()
@@ -66,7 +66,7 @@ namespace MonoDevelop.CSharpRepl
 				return CreateEvaluationRequest(result);
 			} else if (type == RequestType.LoadAssembly) {
 				string result = input.Length - 4 > 0 ? Encoding.UTF8.GetString(input, 4, input.Length - 4) : null;
-				return CreateAssemblyLoadRequest(result);
+				return CreateLoadAssemblyRequest(result);
 			} else {
 				return new Request(type);
 			}

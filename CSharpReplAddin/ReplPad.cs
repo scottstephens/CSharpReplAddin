@@ -171,7 +171,9 @@ namespace MonoDevelop.CSharpRepl
 				} else if (x.ReferenceType == ReferenceType.Project) {
 					DotNetProject inner_project = project.ParentSolution.FindProjectByName(x.Reference) as DotNetProject;
 					if (inner_project != null) {
-						this.view.WriteOutput(String.Format("Project reference not loaded because feature not yet supported: ", inner_project.Name));
+						var config = inner_project.GetConfiguration(IdeApp.Workspace.ActiveConfiguration) as DotNetProjectConfiguration;
+						string file_name = config.CompiledOutputName.FullPath.ToString();
+						this.shell.loadAssembly(file_name);
 					} else 
 						this.view.WriteOutput(String.Format ("Cannot load non .NET project reference: {0}/{1}", project.Name, x.Reference));
 				}
