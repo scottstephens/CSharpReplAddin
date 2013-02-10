@@ -1,5 +1,5 @@
-<Addin id          = "MonoDevelop.CSharpRepl"
-       namespace   = "MonoDevelop.CSharpRepl"
+<Addin id          = "CSharpRepl"
+       namespace   = "MonoDevelop"
        name        = "C# REPL Pad"
        author      = "Scott Stephens"
        copyright   = "MIT X11"
