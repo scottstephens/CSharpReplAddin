@@ -153,9 +153,9 @@ namespace MonoDevelop.CSharpRepl
 			view.SetFont (customFont);
 		}
 
-		public void InputBlock(string block)
+		public void InputBlock(string block, string prefix_to_strip="")
 		{
-			this.view.WriteInput(block);
+			this.view.WriteInput(block, prefix_to_strip);
 		}
 
 		public void LoadReferences(DotNetProject project)

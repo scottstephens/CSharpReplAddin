@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using MonoDevelop.Components.Commands;
 using MonoDevelop.CSharpRepl;
 using ExtensibleTextEditor = MonoDevelop.SourceEditor.ExtensibleTextEditor;
@@ -19,6 +20,10 @@ namespace MonoDevelop.CSharpRepl.Commands
 				return project != null && project.LanguageName == "C#";
 			}
 		}
+
+		public static string SpacesAtStart(string input) {
+			return input.Substring(0,input.Length - input.TrimStart().Length);
+		}
 	}
 
 	public class RunSelectionHandler : CommandHandler
@@ -28,6 +33,7 @@ namespace MonoDevelop.CSharpRepl.Commands
 			if (IdeApp.Workbench.RootWindow.HasToplevelFocus) {
 				ExtensibleTextEditor editor = IdeApp.Workbench.RootWindow.Focus as ExtensibleTextEditor;
 				if (editor != null) {
+					string spaces_at_start = CommandHelper.SpacesAtStart(editor.GetTextAt(editor.SelectedLines.First().Segment));
 					StringBuilder block_builder = new StringBuilder();
 					if (editor.SelectedText == null)
 					{
@@ -36,9 +42,9 @@ namespace MonoDevelop.CSharpRepl.Commands
 							string x = editor.GetTextAt(line.Segment);
 							block_builder.AppendLine(x);
 						}
-						ReplPad.Instance.InputBlock(block_builder.ToString());
+						ReplPad.Instance.InputBlock(block_builder.ToString(), spaces_at_start);
 					} else {
-						ReplPad.Instance.InputBlock(editor.SelectedText);
+						ReplPad.Instance.InputBlock(editor.SelectedText, spaces_at_start);
 					}
 				}
 			}
@@ -59,6 +65,7 @@ namespace MonoDevelop.CSharpRepl.Commands
 
 				DocumentLine last_line = null;
 				if (editor != null) {
+					string spaces_at_start = CommandHelper.SpacesAtStart(editor.GetTextAt(editor.SelectedLines.First().Segment));
 					StringBuilder block_builder = new StringBuilder();
 					foreach (var line in editor.SelectedLines)
 					{
@@ -66,7 +73,7 @@ namespace MonoDevelop.CSharpRepl.Commands
 						block_builder.AppendLine(x);
 						last_line = line;
 					}
-					ReplPad.Instance.InputBlock(block_builder.ToString());
+					ReplPad.Instance.InputBlock(block_builder.ToString(), spaces_at_start);
 					editor.ClearSelection();
 					editor.Caret.Line = last_line.LineNumber + 1;
 				}

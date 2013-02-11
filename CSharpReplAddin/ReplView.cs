@@ -342,7 +342,7 @@ namespace MonoDevelop.CSharpRepl.Components
 			TextIter start = Buffer.EndIter;
 			Buffer.Insert (ref start , content);
 		}
-		public void WriteInput(string content)
+		public void WriteInput(string content, string prefix_to_strip)
 		{
 			string[] lines = content.Split(new string[]{Environment.NewLine},StringSplitOptions.RemoveEmptyEntries);
 
@@ -351,7 +351,13 @@ namespace MonoDevelop.CSharpRepl.Components
 				if (ii > 0) {
 					this.InternalPrompt(true, false);
 				}
-				this.WriteNonTerminatedInput(lines[ii]);
+				string line_prefix = lines[ii].Substring(0,prefix_to_strip.Length);
+				string line_to_write;
+				if (line_prefix == prefix_to_strip)
+					line_to_write = lines[ii].Substring(prefix_to_strip.Length);
+				else
+					line_to_write = lines[ii];
+				this.WriteNonTerminatedInput(line_to_write);
 				this.FinalizeLine(ii == lines.Length - 1);
 			}
 			this.FinalizeBlock();
