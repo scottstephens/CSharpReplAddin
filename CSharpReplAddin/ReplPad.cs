@@ -117,9 +117,11 @@ namespace MonoDevelop.CSharpRepl
 		{
 			string bin_dir = Path.GetDirectoryName(Assembly.GetAssembly(typeof(ReplPad)).Location);
 			string repl_exe = Path.Combine(bin_dir, "CSharpReplServer.exe");
+			//string  framework_exe = @"C:\Program Files (x86)\Mono-2.10.9\bin\mono.exe";
+			//var start_info = new ProcessStartInfo(framework_exe, repl_exe + " 33333");
 			var start_info = new ProcessStartInfo(repl_exe,"33333");
 			start_info.UseShellExecute = false;
-            start_info.CreateNoWindow = true;
+			start_info.CreateNoWindow = true;
 			start_info.RedirectStandardError = true;
 			start_info.RedirectStandardOutput = true;
 			
