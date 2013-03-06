@@ -24,6 +24,20 @@ namespace MonoDevelop.CSharpRepl.Commands
 		public static string SpacesAtStart(string input) {
 			return input.Substring(0,input.Length - input.TrimStart().Length);
 		}
+
+		public static ExtensibleTextEditor ActiveEditor
+		{
+			get
+			{
+				Mono.TextEditor.TextArea text_area = IdeApp.Workbench.RootWindow.Focus as Mono.TextEditor.TextArea;
+				ExtensibleTextEditor editor;
+				if (text_area != null)
+					editor = text_area.Parent as ExtensibleTextEditor;
+				else
+					editor = IdeApp.Workbench.RootWindow.Focus as ExtensibleTextEditor;
+				return editor;
+			}
+		}
 	}
 
 	public class RunSelectionHandler : CommandHandler
@@ -31,7 +45,9 @@ namespace MonoDevelop.CSharpRepl.Commands
 		protected override void Run ()
 		{
 			if (IdeApp.Workbench.RootWindow.HasToplevelFocus) {
-				ExtensibleTextEditor editor = IdeApp.Workbench.RootWindow.Focus as ExtensibleTextEditor;
+
+				ExtensibleTextEditor editor = CommandHelper.ActiveEditor;				
+
 				if (editor != null) {
 					string spaces_at_start = CommandHelper.SpacesAtStart(editor.GetTextAt(editor.SelectedLines.First().Segment));
 					StringBuilder block_builder = new StringBuilder();
@@ -61,7 +77,7 @@ namespace MonoDevelop.CSharpRepl.Commands
 		protected override void Run ()
 		{
 			if (IdeApp.Workbench.RootWindow.HasToplevelFocus) {
-				ExtensibleTextEditor editor = IdeApp.Workbench.RootWindow.Focus as ExtensibleTextEditor;
+				ExtensibleTextEditor editor = CommandHelper.ActiveEditor;
 
 				DocumentLine last_line = null;
 				if (editor != null) {
