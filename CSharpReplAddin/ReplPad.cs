@@ -55,7 +55,7 @@ namespace MonoDevelop.CSharpRepl
 		public void Initialize (IPadWindow container)
 		{
 			if (IdeApp.Preferences.CustomOutputPadFont != null)
-				customFont = Pango.FontDescription.FromString (IdeApp.Preferences.CustomOutputPadFont);
+				customFont = IdeApp.Preferences.CustomOutputPadFont;
 			else 
 				customFont = Pango.FontDescription.FromString("Courier New");
 			
@@ -151,7 +151,7 @@ namespace MonoDevelop.CSharpRepl
 				customFont = null;
 			}
 			
-			customFont = Pango.FontDescription.FromString (IdeApp.Preferences.CustomOutputPadFont);
+			customFont = IdeApp.Preferences.CustomOutputPadFont;
 			
 			view.SetFont (customFont);
 		}

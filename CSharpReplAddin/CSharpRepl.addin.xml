@@ -6,15 +6,15 @@
        url         = "xxx"
        description = "Provides REPL pad for C# language"
 	   category    = "??"
-       version     = "3.0.5">
+       version     = "0.0.0">
 
 	<Runtime>
 		<Import assembly = "CSharpRepl.dll"/>
 	</Runtime>
 
 	<Dependencies>
-		<Addin id="::MonoDevelop.Core" version="3.0.5"/>
-		<Addin id="::MonoDevelop.Ide" version="3.0.5"/>
+		<Addin id="::MonoDevelop.Core" version="4.0.0"/>
+		<Addin id="::MonoDevelop.Ide" version="4.0.0"/>
 	</Dependencies>
 	
 	<Extension path = "/MonoDevelop/Ide/Pads">
