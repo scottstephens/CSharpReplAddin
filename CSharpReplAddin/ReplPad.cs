@@ -96,7 +96,13 @@ namespace MonoDevelop.CSharpRepl
 			}
 			if (_repl_process != null)
 			{
-				_repl_process.Kill();
+				try
+				{
+					_repl_process.Kill();
+				}
+				catch (InvalidOperationException)
+				{
+				}
 				_repl_process.Close();
 				_repl_process.Dispose();
 				_repl_process = null;
