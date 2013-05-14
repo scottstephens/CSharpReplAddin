@@ -110,7 +110,7 @@ namespace MonoDevelop.CSharpRepl.Commands
 
 			if (project != null && ReplPad.Instance != null)
 			{
-				ReplPad.Instance.Start();
+                ReplPad.Instance.Start(project.DefaultConfiguration.Platform);
 				ReplPad.Instance.LoadReferences(project);
 			}
 		}
