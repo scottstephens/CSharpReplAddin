@@ -10,22 +10,6 @@
     <RootNamespace>MonoDevelop.CSharpRepl</RootNamespace>
     <AssemblyName>CSharpReplLibrary</AssemblyName>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugMac|AnyCPU' ">
-    <DebugSymbols>True</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>False</Optimize>
-    <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <ConsolePause>False</ConsolePause>
-    <EnvironmentVariables>
-      <EnvironmentVariables>
-        <Variable name="DYLD_FALLBACK_LIBRARY_PATH" value="/Library/Frameworks/Mono.framework/Versions/Current/lib:/lib:/usr/lib" />
-        <Variable name="PATH" value="/Library/Frameworks/Mono.framework/Versions/Current/bin:$(PATH)" />
-      </EnvironmentVariables>
-    </EnvironmentVariables>
-  </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
     <Optimize>True</Optimize>
@@ -34,7 +18,7 @@
     <WarningLevel>4</WarningLevel>
     <ConsolePause>False</ConsolePause>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugWindows|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;</DefineConstants>

@@ -107,6 +107,10 @@
       <Project>{192043DA-F32A-4DEA-A010-CD2C3971A34B}</Project>
       <Name>CSharpReplLibrary</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CSharpReplServer32\CSharpReplServer32.csproj">
+      <Project>{E9FB71B6-143E-4410-9E7D-157125F0FFF1}</Project>
+      <Name>CSharpReplServer32</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CSharpReplServer64\CSharpReplServer64.csproj">
       <Project>{7726280A-BE26-4CB7-B38B-69C42298A23A}</Project>
       <Name>CSharpReplServer64</Name>
