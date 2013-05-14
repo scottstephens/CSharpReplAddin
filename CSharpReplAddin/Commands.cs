@@ -44,7 +44,7 @@ namespace MonoDevelop.CSharpRepl.Commands
 	{
 		protected override void Run ()
 		{
-			if (IdeApp.Workbench.RootWindow.HasToplevelFocus) {
+			if (IdeApp.Workbench.RootWindow.HasToplevelFocus && ReplPad.Instance != null) {
 
 				ExtensibleTextEditor editor = CommandHelper.ActiveEditor;				
 
@@ -68,7 +68,7 @@ namespace MonoDevelop.CSharpRepl.Commands
 		protected override void Update (CommandInfo info)
 		{
 			info.Visible = CommandHelper.ActiveDocumentIsCSharp;
-			info.Enabled = CommandHelper.ActiveDocumentIsCSharp && ReplPad.Instance.Running;
+			info.Enabled = CommandHelper.ActiveDocumentIsCSharp && ReplPad.Instance != null && ReplPad.Instance.Running;
 		}
 	}
 
@@ -76,7 +76,7 @@ namespace MonoDevelop.CSharpRepl.Commands
 	{
 		protected override void Run ()
 		{
-			if (IdeApp.Workbench.RootWindow.HasToplevelFocus) {
+			if (IdeApp.Workbench.RootWindow.HasToplevelFocus && ReplPad.Instance != null) {
 				ExtensibleTextEditor editor = CommandHelper.ActiveEditor;
 
 				DocumentLine last_line = null;
@@ -98,7 +98,7 @@ namespace MonoDevelop.CSharpRepl.Commands
 		protected override void Update (CommandInfo info)
 		{
 			info.Visible = CommandHelper.ActiveDocumentIsCSharp;
-			info.Enabled = CommandHelper.ActiveDocumentIsCSharp && ReplPad.Instance.Running;
+			info.Enabled = CommandHelper.ActiveDocumentIsCSharp && ReplPad.Instance != null && ReplPad.Instance.Running;
 		}
 	}
 
@@ -108,7 +108,7 @@ namespace MonoDevelop.CSharpRepl.Commands
 		{
 			DotNetProject project = IdeApp.Workbench.ActiveDocument.Project as DotNetProject;
 
-			if (project != null)
+			if (project != null && ReplPad.Instance != null)
 			{
 				ReplPad.Instance.Start();
 				ReplPad.Instance.LoadReferences(project);
@@ -117,7 +117,7 @@ namespace MonoDevelop.CSharpRepl.Commands
 
 		protected override void Update (CommandInfo info)
 		{
-			info.Enabled = !ReplPad.Instance.Running;
+			info.Enabled = ReplPad.Instance != null && !ReplPad.Instance.Running;
 			info.Visible = CommandHelper.ActiveDocumentIsCSharp;
 		}
 	}
@@ -130,7 +130,7 @@ namespace MonoDevelop.CSharpRepl.Commands
 		}
 		protected override void Update (CommandInfo info)
 		{
-			info.Enabled = !ReplPad.Instance.Running;
+			info.Enabled = ReplPad.Instance != null && !ReplPad.Instance.Running;
 			info.Visible = true;
 		}
 	}
