@@ -73,12 +73,12 @@ namespace MonoDevelop.CSharpRepl
 			ReplPad.Instance = this;
 		}
 
-		public void Start()
+		public void Start(string platform="AnyCPU")
 		{
 			// Start Repl process
 			if (!this.Running)
 			{
-				this.StartInteractiveSession();
+				this.StartInteractiveSession(platform);
 				this.ConnectToInteractiveSession();
 				this.Running = true;
 			}
@@ -119,10 +119,28 @@ namespace MonoDevelop.CSharpRepl
 		{
 			ConnectToInteractiveSession();
 		}
-		void StartInteractiveSession()
+		void StartInteractiveSession(string platform="AnyCPU")
 		{
+            string exe_name;
+            switch (platform)
+            {
+                case "AnyCPU":
+                case "":
+                    exe_name = "CSharpReplServer.exe";
+                    break;
+                case "x86":
+                    exe_name = "CSharpReplServer32.exe";
+                    break;
+                case "x64":
+                    exe_name = "CSharpReplServer64.exe";
+                    break;
+                default:
+                    view.WriteOutput(String.Format("Cannot start interactive session for platform {0}. Platform not supported.", platform));
+                    return;
+            }
+
 			string bin_dir = Path.GetDirectoryName(Assembly.GetAssembly(typeof(ReplPad)).Location);
-			string repl_exe = Path.Combine(bin_dir, "CSharpReplServer.exe");
+			string repl_exe = Path.Combine(bin_dir, exe_name);
 			//string  framework_exe = @"C:\Program Files (x86)\Mono-2.10.9\bin\mono.exe";
 			//var start_info = new ProcessStartInfo(framework_exe, repl_exe + " 33333");
 			var start_info = new ProcessStartInfo(repl_exe,"33333");
@@ -144,6 +162,7 @@ namespace MonoDevelop.CSharpRepl
 			try {
 				tmpshell.Start();
 				this.shell = tmpshell;
+                view.WriteOutput("Successfully connected to interactive session.");
 			} catch (Exception e) {
 				this.shell = null;
 				view.WriteOutput("Failed connecting to interactive session: " + e.Message);
