@@ -80,7 +80,6 @@ namespace MonoDevelop.CSharpRepl
 			{
 				this.StartInteractiveSession(platform);
 				this.ConnectToInteractiveSession();
-				this.Running = true;
 			}
 		}
 
@@ -161,9 +160,11 @@ namespace MonoDevelop.CSharpRepl
 			try {
 				tmpshell.Start();
 				this.shell = tmpshell;
+				this.Running = true;
                 view.WriteOutput("Successfully connected to interactive session.");
 			} catch (Exception e) {
 				this.shell = null;
+				this.Running = false;
 				view.WriteOutput("Failed connecting to interactive session: " + e.Message);
 			}
 		}
