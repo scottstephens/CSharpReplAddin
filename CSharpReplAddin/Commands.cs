@@ -114,7 +114,8 @@ namespace MonoDevelop.CSharpRepl.Commands
 				DotNetProjectConfiguration config = IdeApp.Workspace.ActiveConfiguration.GetConfiguration(project) as DotNetProjectConfiguration;
 				CSharpCompilerParameters compiler_parameters = config.CompilationParameters as CSharpCompilerParameters;
                 ReplPad.Instance.Start(compiler_parameters.PlatformTarget);
-				ReplPad.Instance.LoadReferences(project);
+				if (ReplPad.Instance.Running)
+					ReplPad.Instance.LoadReferences(project);
 			}
 		}
 
