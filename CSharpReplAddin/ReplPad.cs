@@ -121,9 +121,9 @@ namespace MonoDevelop.CSharpRepl
 		void StartInteractiveSession(string platform="AnyCPU")
 		{
             string exe_name;
-            switch (platform)
+            switch (platform.ToLower())
             {
-                case "AnyCPU":
+                case "anycpu":
                     exe_name = "CSharpReplServer.exe";
                     break;
                 case "x86":
