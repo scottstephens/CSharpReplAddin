@@ -125,7 +125,6 @@ namespace MonoDevelop.CSharpRepl
             switch (platform)
             {
                 case "AnyCPU":
-                case "":
                     exe_name = "CSharpReplServer.exe";
                     break;
                 case "x86":

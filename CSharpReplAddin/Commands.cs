@@ -7,6 +7,7 @@ using DocumentLine = Mono.TextEditor.DocumentLine;
 using MonoDevelop.Ide;
 using MonoDevelop.Projects;
 using System.Text;
+using MonoDevelop.CSharp.Project;
 
 namespace MonoDevelop.CSharpRepl.Commands
 {
@@ -110,7 +111,9 @@ namespace MonoDevelop.CSharpRepl.Commands
 
 			if (project != null && ReplPad.Instance != null)
 			{
-                ReplPad.Instance.Start(project.DefaultConfiguration.Platform);
+				DotNetProjectConfiguration config = IdeApp.Workspace.ActiveConfiguration.GetConfiguration(project) as DotNetProjectConfiguration;
+				CSharpCompilerParameters compiler_parameters = config.CompilationParameters as CSharpCompilerParameters;
+                ReplPad.Instance.Start(compiler_parameters.PlatformTarget);
 				ReplPad.Instance.LoadReferences(project);
 			}
 		}
