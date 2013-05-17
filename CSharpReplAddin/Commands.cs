@@ -93,6 +93,13 @@ namespace MonoDevelop.CSharpRepl.Commands
 					ReplPad.Instance.InputBlock(block_builder.ToString(), spaces_at_start);
 					editor.ClearSelection();
 					editor.Caret.Line = last_line.LineNumber + 1;
+
+					int lines_checked = 0;
+					while (lines_checked < 5 && editor.GetTextAt(editor.SelectedLines.First().Segment).Trim() == "")
+					{
+						lines_checked += 1;
+						editor.Caret.Line += 1;
+					}
 				}
 			}
 		}
